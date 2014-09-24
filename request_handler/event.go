@@ -2,6 +2,7 @@ package request_handler
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -10,6 +11,8 @@ import (
 type EventRecord interface {
 	AuditTrail() string
 	HttpRequest() string
+	Encode() ([]byte, error)
+	GetId() string
 }
 
 const (
@@ -22,6 +25,10 @@ type Event struct {
 	UUID       string
 	Data       string
 	Version    int
+}
+
+func (e *Event) GetId() string {
+	return e.UUID
 }
 
 func (e *Event) AuditTrail() string {
@@ -44,4 +51,8 @@ func (e *Event) HttpRequest() string {
 	b.WriteString(fmt.Sprintf("%s=%d", "recordversion", e.Version))
 
 	return b.String()
+}
+
+func (e *Event) Encode() ([]byte, error) {
+	return json.Marshal(e)
 }

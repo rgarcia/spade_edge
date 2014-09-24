@@ -56,16 +56,19 @@ type SpadeHandler struct {
 type FileAuditLogger struct {
 	AuditLogger *gologging.UploadLogger
 	SpadeLogger *gologging.UploadLogger
+	KLogger     SpadeEdgeLogger
 }
 
 func (a *FileAuditLogger) Close() {
 	a.AuditLogger.Close()
 	a.SpadeLogger.Close()
+	a.KLogger.Close()
 }
 
 func (a *FileAuditLogger) Log(log EventRecord) {
 	a.AuditLogger.Log("%s", log.AuditTrail())
 	a.SpadeLogger.Log("%s", log.HttpRequest())
+	a.KLogger.Log(log)
 }
 
 func getIpFromHeader(headerKey string, header http.Header) string {
@@ -116,7 +119,6 @@ func (s *SpadeHandler) HandleSpadeRequests(r *http.Request, context *requestCont
 			return http.StatusBadRequest
 		}
 	case "POST":
-		// This supports one request per post...
 		b, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			return http.StatusBadRequest
